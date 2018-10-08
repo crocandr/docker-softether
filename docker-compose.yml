@@ -1,0 +1,12 @@
+version: '3'
+
+services:
+  softether:
+    image: croc/softether
+    volumes:
+      - './config:/config'
+      - './log:/log'
+      - '/etc/localtime:/etc/localtime:ro'
+    privileged: true
+    network_mode: host
+#    restart: always
