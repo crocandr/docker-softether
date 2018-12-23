@@ -6,7 +6,7 @@ RUN apt-get update && apt-get install -y curl tar gzip grep make gcc cpp
 RUN curl -L -o /opt/softether.tar.gz $DOWNLOAD_URL && tar xzfp /opt/softether.tar.gz -C /opt 
 RUN cd /opt/vpnserver && make i_read_and_agree_the_license_agreement 
 
-COPY files/start.sh /opt/start.sh
+COPY files/* /opt/
 RUN chmod 755 /opt/*.sh
 
 #ENTRYPOINT /bin/bash
