@@ -19,4 +19,4 @@ fi
 $BASE_DIR/vpnserver start
 
 # something daemon like stuff
-tail -f $BASE_DIR/server_log/*
+[ $( ls -1 $BASE_DIR/server_log/* | wc -l ) -gt 0 ] && { tail -f $BASE_DIR/server_log/*; } || { echo "sorry, log file not found"; tail -f /dev/null; }
