@@ -2,6 +2,9 @@
 
 BASE_DIR="/opt/vpnserver"
 
+# config file check
+[ -f $BASE_DIR/vpn_server.config ] || { echo "Config is not a file! Check your docker settings."; exit 1; }
+
 # first start 
 if [ -s $BASE_DIR/vpn_server.config ]
 then
