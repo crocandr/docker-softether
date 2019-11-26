@@ -25,6 +25,7 @@ docker-compose up -d
 
   - start the VPN server
   - connect to the server with SoftEther Server Manager Tool from Windows or macOS
+  - the new Web Administration Console (still under construction) available on port 9443 (in the container: 443)
 
 Notice:
 sometimes the default 443 port is used by another service, so use another available port like 5555, 8888...
