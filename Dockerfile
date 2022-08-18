@@ -7,6 +7,7 @@ RUN apt-get update && \
 RUN tar xzfp /opt/softether.tar.gz -C /opt && \
     rm -f /opt/softether.tar.gz
 RUN cd /opt/vpnserver && \
+    ls -hal && \ 
     make i_read_and_agree_the_license_agreement 
 
 RUN chmod 755 /opt/*.sh
