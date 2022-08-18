@@ -41,25 +41,25 @@ jobs:
         run: |
           for ARCH in AMD64 ARM; do
             echo "Creating container for $ARCH ..."
-            cp -f $Dockerfile $Dockerfile-$ARCH
-            ls -hal $SRC_DIR  ls -hal $TMP_DIR  cat $TMP_DIR/latest_url-*$ARCH*.txt
-            LATEST_URL=$( cat $TMP_DIR/latest_url-*$ARCH*.txt );
+            cp -f Dockerfile Dockerfile-$ARCH
+            cat latest_url-*$ARCH*.txt
+            LATEST_URL=$( cat latest_url-*$ARCH*.txt );
             echo "Latest URL: $LATEST_URL"
             [ -z "$LATEST_URL" ] && { echo "Latest url not found"; exit 1; }
-            sed -i "s@ENV.*DOWNLOAD_URL.*@ENV DOWNLOAD_URL $LATEST_URL@g" $Dockerfile-$ARCH 
-            echo "--- Dockerfile for $ARCH ---"  cat $Dockerfile-$ARCH  echo "-------------------------"
-            VERSION_DOWNLOAD_URL=$( grep DOWNLOAD_URL $Dockerfile-$ARCH | awk '{ print $3 }' ) 
+            sed -i "s@ENV.*DOWNLOAD_URL.*@ENV DOWNLOAD_URL $LATEST_URL@g" Dockerfile-$ARCH 
+            echo "--- Dockerfile for $ARCH ---"  cat Dockerfile-$ARCH  echo "-------------------------"
+            VERSION_DOWNLOAD_URL=$( grep DOWNLOAD_URL Dockerfile-$ARCH | awk '{ print $3 }' ) 
             SOFTETHER_VERSION=$( basename $VERSION_DOWNLOAD_URL | sed "s@softether-vpnserver-@@g" | cut -f1-3 -d'-' )  echo "Softether version is $SOFTETHER_VERSION" 
-            cat $Dockerfile-$ARCH
+            cat Dockerfile-$ARCH
             case $ARCH in
               "ARM" )
                 echo "  Using docker buildx method ..." 
-                docker buildx build --rm --platform linux/arm64 -t croc/softether-arm64 -f $Dockerfile-$ARCH $SRC_DIR 
+                docker buildx build --rm --platform linux/arm64 -t croc/softether-arm64 -f Dockerfile-$ARCH $SRC_DIR 
                 docker tag croc/softether croc/softether-arm64:$SOFTETHER_VERSION
                 ;;
               * )
                 echo "  Using normal docker build method ..." 
-                docker build -t croc/softether -f $Dockerfile-$ARCH $SRC_DIR 
+                docker build -t croc/softether -f Dockerfile-$ARCH $SRC_DIR 
                 docker tag croc/softether croc/softether:$SOFTETHER_VERSION
                 ;;
             esac
