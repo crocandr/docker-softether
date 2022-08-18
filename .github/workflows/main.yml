@@ -6,7 +6,7 @@ name: Auto-CI
 on:
   # Triggers the workflow on push or pull request events but only for the "master" branch
   push:
-    branches: [ "master" ]
+    branches:
   pull_request:
     branches: [ "master" ]
 #  schedule:
@@ -41,14 +41,15 @@ jobs:
           done
       - name: build container
         run: |
-          for ARCH in AMD64 ARM; do
+          for ARCH in "AMD64" "ARM"
+          do
             echo "Creating container for $ARCH ..."
             cp -f Dockerfile Dockerfile-$ARCH
-            cat latest_url-*$ARCH*.txt
             LATEST_URL=$( cat latest_url-*$ARCH*.txt )
             echo "Latest URL: $LATEST_URL"
             [ -z "$LATEST_URL" ] && { echo "Latest url not found"; exit 1; }
             curl -L -o files/softether.tar.gz "$LATEST_URL"
+            ls -hal files/softether.tar.gz
             SOFTETHER_VERSION=$( basename $LATEST_URL | sed "s@softether-vpnserver-@@g" | cut -f1-3 -d'-' )
             echo "Softether version: $SOFTETHER_VERSION"
             [ -z "$SOFTETHER_VERSION" ] && { echo "Softether version not defined"; exit 1; }
