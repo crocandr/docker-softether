@@ -33,9 +33,11 @@ jobs:
           BASE_URL="https://www.softether-download.com"
           LATEST_FOLDER=$( curl -s $BASE_URL/files/softether/ | tr ';' '\n' | grep -i href | awk -F'"' '{ print $2 }' | sort -n | tail -n1 )
           echo "Latest folder is $LATEST_FOLDER"
-          for FOLDER_STRING in "Intel_x64_or_AMD64" "ARM_64bit"; do
+          for FOLDER_STRING in "Intel_x64_or_AMD64" "ARM_64bit"
+          do
             LATEST=$( curl -s "$BASE_URL/$LATEST_FOLDER/Linux/SoftEther_VPN_Server/64bit_-_$FOLDER_STRING/" | tr '<' '\n' | grep -i href | grep -i tar.gz | awk -F '"' '{ print $2 }' ) 
-            echo "URL to latest version for $FOLDER_STRING is $BASE_URL/$LATEST"  echo "$BASE_URL/$LATEST" > latest_url-$FOLDER_STRING.txt
+            echo -e "\nURL for $FOLDER_STRING: " 
+            echo "$BASE_URL/$LATEST" | tee latest_url-$FOLDER_STRING.txt
           done
       - name: build container
         run: |
@@ -43,7 +45,7 @@ jobs:
             echo "Creating container for $ARCH ..."
             cp -f Dockerfile Dockerfile-$ARCH
             cat latest_url-*$ARCH*.txt
-            LATEST_URL=$( cat latest_url-*$ARCH*.txt );
+            LATEST_URL=$( cat latest_url-*$ARCH*.txt )
             echo "Latest URL: $LATEST_URL"
             [ -z "$LATEST_URL" ] && { echo "Latest url not found"; exit 1; }
             sed -i "s@ENV.*DOWNLOAD_URL.*@ENV DOWNLOAD_URL $LATEST_URL@g" Dockerfile-$ARCH
