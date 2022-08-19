@@ -21,53 +21,47 @@ jobs:
   build:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
-
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
-
+      - uses: ./.github/workflows/get-latest-url
       # Runs a set of commands using the runners shell
-      - name: get latest url
+      - name: build container - AMD64
+        env:
+          ARCH: AMD64
         run: |
-          BASE_URL="https://www.softether-download.com"
-          LATEST_FOLDER=$( curl -s $BASE_URL/files/softether/ | tr ';' '\n' | grep -i href | awk -F'"' '{ print $2 }' | sort -n | tail -n1 )
-          echo "Latest folder is $LATEST_FOLDER"
-          for FOLDER_STRING in "Intel_x64_or_AMD64" "ARM_64bit"
-          do
-            LATEST=$( curl -s "$BASE_URL/$LATEST_FOLDER/Linux/SoftEther_VPN_Server/64bit_-_$FOLDER_STRING/" | tr '<' '\n' | grep -i href | grep -i tar.gz | awk -F '"' '{ print $2 }' ) 
-            echo -e "\nURL for $FOLDER_STRING: " 
-            echo "$BASE_URL/$LATEST" | tee latest_url-$FOLDER_STRING.txt
-          done
-      - name: build container
+          LATEST_URL=$( cat latest_url-*$ARCH*.txt )
+          echo "Latest URL: $LATEST_URL"
+          [ -z "$LATEST_URL" ] && { echo "Latest url not found"; exit 1; }
+          curl -L -o files/softether.tar.gz "$LATEST_URL"
+          ls -hal files/softether.tar.gz
+          SOFTETHER_VERSION=$( basename $LATEST_URL | sed "s@softether-vpnserver-@@g" | cut -f1-3 -d'-' )
+          echo "Softether version: $SOFTETHER_VERSION"
+          [ -z "$SOFTETHER_VERSION" ] && { echo "Softether version not defined"; exit 1; }
+          echo -e "\n\nDockerfile:\n$( cat Dockerfile-$ARCH )\n\n"
+
+          docker build --rm -t croc/softether -f Dockerfile-$ARCH .
+          docker tag croc/softether croc/softether:$SOFTETHER_VERSION
+      - name: setup buildx for arm build
+        id: buildx
+        uses: docker/setup-buildx-action@v2
+      - name: build container - ARM 64bit
+        env:
+          ARCH: ARM
         run: |
-          for ARCH in "AMD64" "ARM"
-          do
-            echo "Creating container for $ARCH ..."
-            cp -f Dockerfile Dockerfile-$ARCH
-            LATEST_URL=$( cat latest_url-*$ARCH*.txt )
-            echo "Latest URL: $LATEST_URL"
-            [ -z "$LATEST_URL" ] && { echo "Latest url not found"; exit 1; }
-            curl -L -o files/softether.tar.gz "$LATEST_URL"
-            ls -hal files/softether.tar.gz
-            SOFTETHER_VERSION=$( basename $LATEST_URL | sed "s@softether-vpnserver-@@g" | cut -f1-3 -d'-' )
-            echo "Softether version: $SOFTETHER_VERSION"
-            [ -z "$SOFTETHER_VERSION" ] && { echo "Softether version not defined"; exit 1; }
-            echo -e "\n\nDockerfile:\n$( cat Dockerfile-$ARCH )\n\n"
-            case $ARCH in
-              "ARM" )
-                echo "  Using docker buildx method ..." 
-                docker buildx build --rm --platform linux/arm64 -t croc/softether-arm64 -f Dockerfile-$ARCH . 
-                docker tag croc/softether croc/softether-arm64:$SOFTETHER_VERSION
-                ;;
-              * )
-                echo "  Using normal docker build method ..." 
-                docker build -t croc/softether -f Dockerfile-$ARCH .
-                docker tag croc/softether croc/softether:$SOFTETHER_VERSION
-                ;;
-            esac
-            docker images | grep -i softether
-          done
+          LATEST_URL=$( cat latest_url-*$ARCH*.txt )
+          echo "Latest URL: $LATEST_URL"
+          [ -z "$LATEST_URL" ] && { echo "Latest url not found"; exit 1; }
+          curl -L -o files/softether.tar.gz "$LATEST_URL"
+          ls -hal files/softether.tar.gz
+          SOFTETHER_VERSION=$( basename $LATEST_URL | sed "s@softether-vpnserver-@@g" | cut -f1-3 -d'-' )
+          echo "Softether version: $SOFTETHER_VERSION"
+          [ -z "$SOFTETHER_VERSION" ] && { echo "Softether version not defined"; exit 1; }
+          echo -e "\n\nDockerfile:\n$( cat Dockerfile-$ARCH )\n\n"
+
+          docker build buildx --rm --platform linux/arm64 -t croc/softether-arm64 -f Dockerfile-$ARCH .
+          docker tag croc/softether-arm64 croc/softether-arm64:$SOFTETHER_VERSION
 #      - name: push container
 #        env:
 #          DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
