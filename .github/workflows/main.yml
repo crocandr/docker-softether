@@ -25,7 +25,7 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
-      - uses: ./.github/workflows/get-latest-url
+      - uses: ./.github/workflows/get-latest-url.yml
       # Runs a set of commands using the runners shell
       - name: build container - AMD64
         env:
