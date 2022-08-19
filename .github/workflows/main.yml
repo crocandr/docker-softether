@@ -37,23 +37,22 @@ jobs:
             echo "$BASE_URL/$LATEST" | tee latest_url-$FOLDER_STRING.txt
           done
       # Runs a set of commands using the runners shell
-#      - name: build container - AMD64
-#        env:
-#          ARCH: AMD64
-#        run: |
-#          LATEST_URL=$( cat latest_url-*$ARCH*.txt )
-#          echo "Latest URL: $LATEST_URL"
-#          [ -z "$LATEST_URL" ] && { echo "Latest url not found"; exit 1; }
-#          curl -L -o files/softether.tar.gz "$LATEST_URL"
-#          ls -hal files/softether.tar.gz
-#          SOFTETHER_VERSION=$( basename $LATEST_URL | sed "s@softether-vpnserver-@@g" | cut -f1-3 -d'-' )
-#          echo "Softether version: $SOFTETHER_VERSION"
-#          [ -z "$SOFTETHER_VERSION" ] && { echo "Softether version not defined"; exit 1; }
-#          echo -e "\n\nDockerfile:\n$( cat Dockerfile )\n\n"
-#
-#          docker build --rm -t croc/softether -f Dockerfile . || { echo "Docker image build fail"; exit 1; }
-#          docker tag croc/softether croc/softether:$SOFTETHER_VERSION
-      
+      - name: build container - AMD64
+        env:
+          ARCH: AMD64
+        run: |
+          LATEST_URL=$( cat latest_url-*$ARCH*.txt )
+          echo "Latest URL: $LATEST_URL"
+          [ -z "$LATEST_URL" ] && { echo "Latest url not found"; exit 1; }
+          curl -L -o files/softether.tar.gz "$LATEST_URL"
+          ls -hal files/softether.tar.gz
+          SOFTETHER_VERSION=$( basename $LATEST_URL | sed "s@softether-vpnserver-@@g" | cut -f1-3 -d'-' )
+          echo "Softether version: $SOFTETHER_VERSION"
+          [ -z "$SOFTETHER_VERSION" ] && { echo "Softether version not defined"; exit 1; }
+          echo -e "\n\nDockerfile:\n$( cat Dockerfile )\n\n"
+
+          docker build --rm -t croc/softether -f Dockerfile . || { echo "Docker image build fail"; exit 1; }
+          docker tag croc/softether croc/softether:$SOFTETHER_VERSION      
       # buildx with quemu
       - name: qemu setup for buildx for arm build
         uses: docker/setup-qemu-action@v2
@@ -76,17 +75,21 @@ jobs:
           [ -z "$SOFTETHER_VERSION" ] && { echo "Softether version not defined"; exit 1; }
           echo -e "\n\nDockerfile:\n$( cat Dockerfile )\n\n"
 
-          docker buildx --help
-
           docker build --rm --platform linux/arm64 -t croc/softether-arm64 -f Dockerfile . || { echo "Docker image build fail - ARM64"; exit 1; }
           docker tag croc/softether-arm64 croc/softether-arm64:$SOFTETHER_VERSION
-#      - name: push container
-#        env:
-#          DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
-#          DOCKERHUB_PASS: ${{ secrets.DOCKERHUB_PASS }}
-#        run: |
-#          docker images
-#          echo $DOCKERHUB_USER | base64 -w0 -i
-#          echo $DOCKERHUB_PASS | base64 -w0 -i
-#          echo "$DOCKERHUB_PASS" | docker login --username=$DOCKERHUB_USER --password-stdin
-#          docker push croc/onedrive
+      - name: push container
+        env:
+          DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
+          DOCKERHUB_PASS: ${{ secrets.DOCKERHUB_PASS }}
+        run: |
+          docker images
+          echo "$DOCKERHUB_PASS" | docker login --username=$DOCKERHUB_USER --password-stdin
+          docker images | grep -i softether
+          # push latest images
+          docker push croc/softether || { echo "latest image push error"; exit 1; }
+          docker push croc/softether-arm64 || { echo "latest image push error - arm64"; exit 1; }
+          # push version
+          VERSION=$( docker images | grep -i croc/softether | awk '{ print $2 }' | grep -i '^v' | sort | uniq )
+          echo "Image version: $VERSION"
+          docker push croc/softether:$VERSION || { echo "version ($VERSION) image push error"; exit 1; }
+          docker push croc/softether-arm64:$VERSION || { echo "version ($VERSION) image push error - arm64"; exit 1; }
