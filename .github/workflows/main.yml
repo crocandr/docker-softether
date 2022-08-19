@@ -36,8 +36,7 @@ jobs:
             echo -e "\nURL for $FOLDER_STRING: " 
             echo "$BASE_URL/$LATEST" | tee latest_url-$FOLDER_STRING.txt
           done
-      # Runs a set of commands using the runners shell
-      - name: build container - AMD64
+      - name: build image - AMD64
         env:
           ARCH: AMD64
         run: |
@@ -53,7 +52,7 @@ jobs:
 
           docker build --rm -t croc/softether -f Dockerfile . || { echo "Docker image build fail"; exit 1; }
           docker tag croc/softether croc/softether:$SOFTETHER_VERSION
-        - name: push container
+      - name: push container
         env:
           DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
           DOCKERHUB_PASS: ${{ secrets.DOCKERHUB_PASS }}
@@ -91,7 +90,7 @@ jobs:
       - name: setup buildx for arm build
         id: buildx
         uses: docker/setup-buildx-action@v2
-      - name: build container - ARM 64bit
+      - name: build image - ARM 64bit
         env:
           ARCH: ARM
         run: |
