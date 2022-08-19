@@ -70,7 +70,9 @@ jobs:
           [ -z "$SOFTETHER_VERSION" ] && { echo "Softether version not defined"; exit 1; }
           echo -e "\n\nDockerfile:\n$( cat Dockerfile )\n\n"
 
-          docker build buildx --rm --platform linux/arm64 -t croc/softether-arm64 -f Dockerfile .
+          echo "Buildx platforms: ${{ steps.buildx.outputs.platforms }}"
+
+          docker build --rm --platform linux/arm64 -t croc/softether-arm64 -f Dockerfile .
           docker tag croc/softether-arm64 croc/softether-arm64:$SOFTETHER_VERSION
 #      - name: push container
 #        env:
