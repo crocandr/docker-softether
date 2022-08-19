@@ -8,6 +8,7 @@ RUN tar xzfp /opt/softether.tar.gz -C /opt && \
     rm -f /opt/softether.tar.gz
 RUN cd /opt/vpnserver && \
     ls -hal && \
+    uname -a && cat /etc/os-release && \
     #make i_read_and_agree_the_license_agreement
     make 
 
