@@ -53,6 +53,10 @@ jobs:
 
           docker build --rm -t croc/softether -f Dockerfile .
           docker tag croc/softether croc/softether:$SOFTETHER_VERSION
+      
+      # buildx with quemu
+      - name: qemu setup for buildx for arm build
+        uses: docker/setup-qemu-action@v2
       - name: setup buildx for arm build
         id: buildx
         uses: docker/setup-buildx-action@v2
@@ -60,6 +64,8 @@ jobs:
         env:
           ARCH: ARM
         run: |
+          echo "Buildx supported platforms: ${{ steps.buildx.outputs.platforms }}"
+
           LATEST_URL=$( cat latest_url-*$ARCH*.txt )
           echo "Latest URL: $LATEST_URL"
           [ -z "$LATEST_URL" ] && { echo "Latest url not found"; exit 1; }
@@ -69,8 +75,6 @@ jobs:
           echo "Softether version: $SOFTETHER_VERSION"
           [ -z "$SOFTETHER_VERSION" ] && { echo "Softether version not defined"; exit 1; }
           echo -e "\n\nDockerfile:\n$( cat Dockerfile )\n\n"
-
-          echo "Buildx platforms: ${{ steps.buildx.outputs.platforms }}"
 
           docker build --rm --platform linux/arm64 -t croc/softether-arm64 -f Dockerfile .
           docker tag croc/softether-arm64 croc/softether-arm64:$SOFTETHER_VERSION
