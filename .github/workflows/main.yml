@@ -9,8 +9,8 @@ on:
     branches:
   pull_request:
     branches: [ "master" ]
-#  schedule:
-#    - cron: '00 5 * * 6' # every Sunday at 5:00
+  schedule:
+    - cron: '00 5 * * 6' # every Sunday at 5:00
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -68,13 +68,13 @@ jobs:
             esac
             docker images | grep -i softether
           done
-#      - name: push container
-#        env:
-#          DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
-#          DOCKERHUB_PASS: ${{ secrets.DOCKERHUB_PASS }}
-#        run: |
-#          docker images
-#          echo $DOCKERHUB_USER | base64 -w0 -i
-#          echo $DOCKERHUB_PASS | base64 -w0 -i
-#          echo "$DOCKERHUB_PASS" | docker login --username=$DOCKERHUB_USER --password-stdin
-#          docker push croc/onedrive
+      - name: push container
+        env:
+          DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
+          DOCKERHUB_PASS: ${{ secrets.DOCKERHUB_PASS }}
+        run: |
+          docker images
+          echo $DOCKERHUB_USER | base64 -w0 -i
+          echo $DOCKERHUB_PASS | base64 -w0 -i
+          echo "$DOCKERHUB_PASS" | docker login --username=$DOCKERHUB_USER --password-stdin
+          docker push croc/onedrive
