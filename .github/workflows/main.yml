@@ -107,6 +107,7 @@ jobs:
           echo -e "\n\nDockerfile:\n$( cat Dockerfile )\n\n"
 
           docker buildx build --rm --platform linux/arm64 -t croc/softether-arm64 . || { echo "Docker image build fail - ARM64"; exit 1; }
+          docker images | grep -i softether
           docker tag croc/softether-arm64 croc/softether-arm64:$SOFTETHER_VERSION
       - name: push container
         env:
