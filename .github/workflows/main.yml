@@ -43,7 +43,7 @@ jobs:
           LATEST_URL=$( cat latest_url-*$ARCH*.txt )
           echo "Latest URL: $LATEST_URL"
           [ -z "$LATEST_URL" ] && { echo "Latest url not found"; exit 1; }
-          curl -L -o files/softether.tar.gz "$LATEST_URL"
+          curl -L -o files/softether.tar.gz "$LATEST_URL" || { echo "Softether download error"; exit 1; }
           ls -hal files/softether.tar.gz
           SOFTETHER_VERSION=$( basename $LATEST_URL | sed "s@softether-vpnserver-@@g" | cut -f1-3 -d'-' )
           echo "Softether version: $SOFTETHER_VERSION"
@@ -99,7 +99,7 @@ jobs:
           LATEST_URL=$( cat latest_url-*$ARCH*.txt )
           echo "Latest URL: $LATEST_URL"
           [ -z "$LATEST_URL" ] && { echo "Latest url not found"; exit 1; }
-          curl -L -o files/softether.tar.gz "$LATEST_URL"
+          curl -L -o files/softether.tar.gz "$LATEST_URL" || { echo "Softether download error"; exit 1; }
           ls -hal files/softether.tar.gz
           SOFTETHER_VERSION=$( basename $LATEST_URL | sed "s@softether-vpnserver-@@g" | cut -f1-3 -d'-' )
           echo "Softether version: $SOFTETHER_VERSION"
