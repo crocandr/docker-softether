@@ -84,9 +84,11 @@ jobs:
             echo -e "\nURL for $FOLDER_STRING: " 
             echo "$BASE_URL/$LATEST" | tee latest_url-$FOLDER_STRING.txt
           done
-      - name: build image - ARM 64bit
+      - name: build and push image - ARM 64bit
         env:
           ARCH: ARM
+          DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
+          DOCKERHUB_PASS: ${{ secrets.DOCKERHUB_PASS }}
         run: |
           LATEST_URL=$( cat latest_url-*$ARCH*.txt )
           echo "Latest URL: $LATEST_URL"
@@ -98,22 +100,13 @@ jobs:
           [ -z "$SOFTETHER_VERSION" ] && { echo "Softether version not defined"; exit 1; }
           echo -e "\n\nDockerfile:\n$( cat Dockerfile )\n\n"
 
+          # create dockerhub login file
+          echo '{ "auths": { "https://index.docker.io/v1/": { "auth": "---CHANGEME---" } } }' > config.json
+          sed -i "s@---CHANGEME---@$( $DOCKERHUB_USER:$DOCKERHUB_PASS | base64 )@g" config.json
+          cat config.json
+
+          # setup for kaniko multiarch build
           docker run --rm --privileged multiarch/qemu-user-static --reset -p yes || { echo "Multiarch setup error"; exit 1; }
-
-          docker run --rm -v $PWD:/workspace gcr.io/kaniko-project/executor --context /workspace --customPlatform linux/arm64/v8 --no-push || { echo "Build error"; exit 1; }
-          docker images
-
-      - name: push container
-        env:
-          DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
-          DOCKERHUB_PASS: ${{ secrets.DOCKERHUB_PASS }}
-        run: |
-          docker images
-          echo "$DOCKERHUB_PASS" | docker login --username=$DOCKERHUB_USER --password-stdin
-          docker images | grep -i softether
-          # push latest images
-          docker push croc/softether-arm64 || { echo "latest image push error - arm64"; exit 1; }
-          # push version
-          VERSION=$( docker images | grep -i croc/softether | awk '{ print $2 }' | grep -i '^v' | sort | uniq )
-          echo "Image version: $VERSION"
-          docker push croc/softether-arm64:$VERSION || { echo "version ($VERSION) image push error - arm64"; exit 1; }
+          # build and push
+          #docker run --rm -v $PWD:/workspace gcr.io/kaniko-project/executor --context /workspace --customPlatform linux/arm64/v8 --no-push || { echo "Build error"; exit 1; }
+          docker run --rm -v $PWD:/workspace -v $PWD/config.json:/kaniko/.docker/config.json:ro gcr.io/kaniko-project/executor --context /workspace --customPlatform linux/arm64/v8 --destination=croc/softether-arm64:$VERSION --destination=croc/softether-arm64:latest || { echo "Build and push error"; exit 1; }
