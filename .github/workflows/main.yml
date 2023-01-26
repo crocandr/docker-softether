@@ -102,7 +102,7 @@ jobs:
 
           # create dockerhub login file
           echo '{ "auths": { "https://index.docker.io/v1/": { "auth": "---CHANGEME---" } } }' > config.json
-          sed -i "s@---CHANGEME---@$( $DOCKERHUB_USER:$DOCKERHUB_PASS | base64 )@g" config.json
+          sed -i "s@---CHANGEME---@$( echo $DOCKERHUB_USER:$DOCKERHUB_PASS | base64 )@g" config.json
           cat config.json
 
           # setup for kaniko multiarch build
