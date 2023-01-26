@@ -100,8 +100,7 @@ jobs:
 
           docker run --rm --privileged multiarch/qemu-user-static --reset -p yes || { echo "Multiarch setup error"; exit 1; }
 
-          ls $PWD
-          docker run -ti --rm -v $PWD:/workspace gcr.io/kaniko-project/executor --context /workspace --customPlatform linux/arm64/v8 --no-push
+          docker run --rm -v $PWD:/workspace gcr.io/kaniko-project/executor --context /workspace --customPlatform linux/arm64/v8 --no-push || { echo "Build error"; exit 1; }
           docker images
 
       - name: push container
