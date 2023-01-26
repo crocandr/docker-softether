@@ -112,4 +112,4 @@ jobs:
           docker run --rm --privileged multiarch/qemu-user-static --reset -p yes || { echo "Multiarch setup error"; exit 1; }
           # build and push
           #docker run --rm -v $PWD:/workspace gcr.io/kaniko-project/executor --context /workspace --customPlatform linux/arm64/v8 --no-push || { echo "Build error"; exit 1; }
-          docker run --rm -v $PWD:/workspace -v $PWD/config.json:/kaniko/.docker/config.json:ro gcr.io/kaniko-project/executor --context /workspace --customPlatform linux/arm64/v8 --destination=croc/softether-arm64:$VERSION --destination=croc/softether-arm64:latest || { echo "Build and push error"; exit 1; }
+          docker run --rm -v $PWD:/workspace -v $PWD/config.json:/kaniko/.docker/config.json:ro gcr.io/kaniko-project/executor --context /workspace --customPlatform linux/arm64/v8 --destination=croc/softether-arm64:$SOFTETHER_VERSION --destination=croc/softether-arm64:latest || { echo "Build and push error"; exit 1; }
