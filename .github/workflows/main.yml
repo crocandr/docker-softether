@@ -103,10 +103,10 @@ jobs:
           # create dockerhub login file
           echo '{ "auths": { "https://index.docker.io/v1/": { "auth": "---CHANGEME---" } } }' > config.json
           # debug:
-          echo -n "$DOCKERHUB_USER:$DOCKERHUB_PASS" | base64
+          #echo -n "$DOCKERHUB_USER:$DOCKERHUB_PASS" | base64
           sed -i "s@---CHANGEME---@$( echo $DOCKERHUB_USER:$DOCKERHUB_PASS | base64 )@g" config.json
           # debug
-          cat config.json | base64 -w -i0
+          #cat config.json | base64
 
           # setup for kaniko multiarch build
           docker run --rm --privileged multiarch/qemu-user-static --reset -p yes || { echo "Multiarch setup error"; exit 1; }
