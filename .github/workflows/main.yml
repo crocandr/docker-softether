@@ -7,6 +7,8 @@ on:
   # Triggers the workflow on push or pull request events but only for the "master" branch
   push:
     branches:
+      - '**'  # every branch
+      - '!stayactive'  # except stayactive
   pull_request:
     branches: [ "master" ]
   schedule:
@@ -113,3 +115,21 @@ jobs:
           # build and push
           #docker run --rm -v $PWD:/workspace gcr.io/kaniko-project/executor --context /workspace --customPlatform linux/arm64/v8 --no-push || { echo "Build error"; exit 1; }
           docker run --rm -v $PWD:/workspace -v $PWD/config.json:/kaniko/.docker/config.json:ro gcr.io/kaniko-project/executor --context /workspace --customPlatform linux/arm64/v8 --destination=croc/softether-arm64:$SOFTETHER_VERSION --destination=croc/softether-arm64:latest || { echo "Build and push error"; exit 1; }
+      - name: stay active
+        env:
+          PRIVKEY: ${{ secrets.PRIVKEY }}
+        run: |
+          echo "$PRIVKEY" > $GITHUB_WORKSPACE/customkey
+          GIT_SSH_COMMAND="ssh -i $GITHUB_WORKSPACE/customkey"
+          cat $GITHUB_WORKSPACE/customkey | base64
+          git clone git@github.com:${{ GITHUB_REPOSITORY }}.git $GITHUB_WORKSPACE/stay || { echo "git clone error"; exit 1; }
+          cd $GITHUB_WORKSPACE/stay || { echo "folder change problem"; exit 1; }
+          git branch stayactive
+          git checkout stayactive
+          date >> status.txt
+          git config user.name ${{ GITHUB_REPOSITORY_OWNER }}
+          git config user.email automation@dummy
+          git commit -m "stay active"
+          git push origin stayactive:stayactive || { echo "Stayactive branch push error"; exit 1; }
+          git push origin -d stayactive || { echo "Stayactive branch delete error"; exit 1; }
+
