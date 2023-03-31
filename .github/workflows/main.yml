@@ -119,12 +119,12 @@ jobs:
         env:
           PRIVKEY: ${{ secrets.PRIVKEY }}
         run: |
-          echo "$PRIVKEY" > ${{ GITHUB_WORKSPACE }}/customkey
-          chmod 600 ${{ GITHUB_WORKSPACE }}/customkey
-          GIT_SSH_COMMAND="ssh -i ${{ GITHUB_WORKSPACE }}/customkey"
-          cat ${{ GITHUB_WORKSPACE }}/customkey | base64
-          git clone git@github.com:${{ GITHUB_REPOSITORY }}.git ${{ GITHUB_WORKSPACE }}/stay || { echo "git clone error"; exit 1; }
-          cd ${{ GITHUB_WORKSPACE }}/stay || { echo "folder change problem"; exit 1; }
+          echo "$PRIVKEY" > customkey
+          chmod 600 customkey
+          GIT_SSH_COMMAND="ssh -i customkey"
+          cat customkey | base64
+          git clone git@github.com:${{ GITHUB_REPOSITORY }}.git stay || { echo "git clone error"; exit 1; }
+          cd stay || { echo "folder change problem"; exit 1; }
           git branch stayactive
           git checkout stayactive
           date >> status.txt
