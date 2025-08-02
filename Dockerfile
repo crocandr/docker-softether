@@ -1,4 +1,4 @@
-FROM debian:10
+FROM debian:12
 
 RUN apt-get update -y && \
     apt-get install -y curl tar gzip grep make gcc cpp
